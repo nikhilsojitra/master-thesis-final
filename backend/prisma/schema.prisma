@@ -68,6 +68,7 @@ model OrderItem {
   @@map("order_items")
 }
 
+
 // SQLite doesn't support enums, using String instead
 // Valid roles: "USER", "ADMIN"
 // Valid order statuses: "PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"
