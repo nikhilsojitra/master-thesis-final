@@ -1,13 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+
+const API_URL = process.env.BACKEND_URL || "http://localhost:5003/api";
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -15,14 +17,14 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   // Set up axios defaults
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     } else {
-      delete axios.defaults.headers.common['Authorization'];
+      delete axios.defaults.headers.common["Authorization"];
     }
   }, [token]);
 
@@ -31,11 +33,11 @@ export const AuthProvider = ({ children }) => {
     const loadUser = async () => {
       if (token) {
         try {
-          const response = await axios.get('http://localhost:5003/api/auth/me');
+          const response = await axios.get(`${API_URL}/auth/me`);
           setUser(response.data.user);
         } catch (error) {
-          console.error('Failed to load user:', error);
-          localStorage.removeItem('token');
+          console.error("Failed to load user:", error);
+          localStorage.removeItem("token");
           setToken(null);
         }
       }
@@ -47,17 +49,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5003/api/auth/login', { email, password });
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password,
+      });
       const { token: newToken, user: userData } = response.data;
-      
-      localStorage.setItem('token', newToken);
+
+      localStorage.setItem("token", newToken);
       setToken(newToken);
       setUser(userData);
-      
-      toast.success('Login successful!');
+
+      toast.success("Login successful!");
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      const message = error.response?.data?.message || "Login failed";
       toast.error(message);
       return { success: false, message };
     }
@@ -65,38 +70,42 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post(`http://localhost:5003/api/auth/register`, { name, email, password });
+      const response = await axios.post(`${API_URL}/auth/register`, {
+        name,
+        email,
+        password,
+      });
       const { token: newToken, user: userData } = response.data;
-      
-      localStorage.setItem('token', newToken);
+
+      localStorage.setItem("token", newToken);
       setToken(newToken);
       setUser(userData);
-      
-      toast.success('Registration successful!');
+
+      toast.success("Registration successful!");
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
+      const message = error.response?.data?.message || "Registration failed";
       toast.error(message);
       return { success: false, message };
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setToken(null);
     setUser(null);
-    delete axios.defaults.headers.common['Authorization'];
-    toast.success('Logged out successfully');
+    delete axios.defaults.headers.common["Authorization"];
+    toast.success("Logged out successfully");
   };
 
   const updateProfile = async (profileData) => {
     try {
-      const response = await axios.put('http://localhost:5003/api/auth/profile', profileData);
+      const response = await axios.put(`${API_URL}/auth/profile`, profileData);
       setUser(response.data.user);
-      toast.success('Profile updated successfully!');
+      toast.success("Profile updated successfully!");
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Profile update failed';
+      const message = error.response?.data?.message || "Profile update failed";
       toast.error(message);
       return { success: false, message };
     }
@@ -104,11 +113,14 @@ export const AuthProvider = ({ children }) => {
 
   const changePassword = async (currentPassword, newPassword) => {
     try {
-      await axios.put('http://localhost:5003/api/auth/change-password', { currentPassword, newPassword });
-      toast.success('Password changed successfully!');
+      await axios.put(`${API_URL}/auth/change-password`, {
+        currentPassword,
+        newPassword,
+      });
+      toast.success("Password changed successfully!");
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Password change failed';
+      const message = error.response?.data?.message || "Password change failed";
       toast.error(message);
       return { success: false, message };
     }
@@ -123,12 +135,8 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     changePassword,
     isAuthenticated: !!user,
-    isAdmin: user?.role === 'ADMIN'
+    isAdmin: user?.role === "ADMIN",
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -10,57 +10,48 @@ jobs:
     name: Deploy application
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Deploy to EC2
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          set -e
+    steps:- name: Deploy to EC2
+  env:
+    SSH_HOST: ${{ secrets.SSH_HOST }}
+    SSH_PORT: ${{ secrets.SSH_PORT }}
+    SSH_USER: ${{ secrets.SSH_USER }}
+    SSH_KEY: ${{ secrets.SSH_KEY }}
+  run: |
+    set -e
 
-          # Setup SSH
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+    mkdir -p ~/.ssh
+    echo "$SSH_KEY" > ~/.ssh/deploy_key
+    chmod 600 ~/.ssh/deploy_key
 
-          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+    ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
 
-          # Connect to EC2 and deploy
-          ssh -i ~/.ssh/deploy_key \
-            -p "$SSH_PORT" \
-            "$SSH_USER@$SSH_HOST" << 'EOF'
+    ssh -i ~/.ssh/deploy_key \
+      -p "$SSH_PORT" \
+      "$SSH_USER@$SSH_HOST" << 'EOF'
 
-            set -e
+      set -e
 
-            cd /var/www/master-thesis-final
+      cd /var/www/master-thesis-final
 
-            echo "================================="
-            echo "Pulling latest code..."
-            echo "================================="
+      echo "Pulling latest code..."
+      git pull origin main
 
-            git pull origin main
+      echo "Building backend..."
+      docker compose build backend
 
-            echo "================================="
-            echo "Building Docker images..."
-            echo "================================="
+      echo "Building frontend..."
+      docker compose build frontend
 
-            docker compose build backend frontend admin
+      echo "Building admin..."
+      docker compose build admin
 
-            echo "================================="
-            echo "Starting containers..."
-            echo "================================="
+      echo "Starting containers..."
+      docker compose up -d backend frontend admin
 
-            docker compose up -d backend frontend admin
+      echo "Deployment complete!"
 
-            echo "================================="
-            echo "Deployment complete!"
-            echo "================================="
+      docker ps
 
-            docker ps
+    EOF
 
-          EOF
-
-          # Remove temporary SSH key
-          rm -f ~/.ssh/deploy_key
+    rm -f ~/.ssh/deploy_key
