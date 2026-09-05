@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { ShoppingCart, Star, ArrowRight, Package, Shield, Truck } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import {
+  ShoppingCart,
+  Star,
+  ArrowRight,
+  Package,
+  Shield,
+  Truck,
+} from "lucide-react";
+import { useCart } from "../contexts/CartContext";
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -12,10 +19,10 @@ const Home = () => {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await axios.get('/api/products/featured/list?limit=8');
+        const response = await axios.get("/api/products/featured/list?limit=8");
         setFeaturedProducts(response.data.products);
       } catch (error) {
-        console.error('Failed to fetch featured products:', error);
+        console.error("Failed to fetch featured products:", error);
       } finally {
         setLoading(false);
       }
@@ -67,10 +74,11 @@ const Home = () => {
               Why Choose ShopHub?
             </h2>
             <p className="text-lg text-gray-600">
-              We provide the best shopping experience with these amazing features
+              We provide the best shopping experience with these amazing
+              features
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -83,7 +91,7 @@ const Home = () => {
                 Carefully curated products from trusted brands and suppliers
               </p>
             </div>
-            
+
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Truck className="h-8 w-8 text-primary-600" />
@@ -95,7 +103,7 @@ const Home = () => {
                 Quick and reliable delivery to your doorstep
               </p>
             </div>
-            
+
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-8 w-8 text-primary-600" />
@@ -138,17 +146,22 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product) => (
-                <div key={product.id} className="card hover:shadow-lg transition-shadow">
+              {featuredProducts?.map((product) => (
+                <div
+                  key={product.id}
+                  className="card hover:shadow-lg transition-shadow"
+                >
                   <div className="relative">
                     <img
-                      src={product.imageUrl || '/api/placeholder/300/200'}
+                      src={product.imageUrl || "/api/placeholder/300/200"}
                       alt={product.name}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
                     {product.stock === 0 && (
                       <div className="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center rounded-t-lg">
-                        <span className="text-white font-semibold">Out of Stock</span>
+                        <span className="text-white font-semibold">
+                          Out of Stock
+                        </span>
                       </div>
                     )}
                   </div>
@@ -180,7 +193,9 @@ const Home = () => {
                       </div>
                     </div>
                     <div className="mt-2 text-sm text-gray-500">
-                      {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                      {product.stock > 0
+                        ? `${product.stock} in stock`
+                        : "Out of stock"}
                     </div>
                   </div>
                 </div>
@@ -189,10 +204,7 @@ const Home = () => {
           )}
 
           <div className="text-center mt-12">
-            <Link
-              to="/products"
-              className="btn-primary text-lg px-8 py-3"
-            >
+            <Link to="/products" className="btn-primary text-lg px-8 py-3">
               View All Products
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
@@ -207,7 +219,8 @@ const Home = () => {
             Ready to Start Shopping?
           </h2>
           <p className="text-xl text-primary-100 mb-8">
-            Join thousands of satisfied customers and find your perfect products today
+            Join thousands of satisfied customers and find your perfect products
+            today
           </p>
           <Link
             to="/register"

@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: online-shop-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5003:5003"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: online-shop-frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "3001:80"
+
+  admin:
+    build:
+      context: ./admin-panel
+    container_name: online-shop-admin
+    restart: unless-stopped
+    env_file:
+      - ./admin-panel/.env
+    ports:
+      - "3002:80"
