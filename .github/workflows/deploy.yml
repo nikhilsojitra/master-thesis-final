@@ -1,0 +1,66 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy application
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          set -e
+
+          # Setup SSH
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          # Connect to EC2 and deploy
+          ssh -i ~/.ssh/deploy_key \
+            -p "$SSH_PORT" \
+            "$SSH_USER@$SSH_HOST" << 'EOF'
+
+            set -e
+
+            cd /var/www/master-thesis-final
+
+            echo "================================="
+            echo "Pulling latest code..."
+            echo "================================="
+
+            git pull origin main
+
+            echo "================================="
+            echo "Building Docker images..."
+            echo "================================="
+
+            docker compose build backend frontend admin
+
+            echo "================================="
+            echo "Starting containers..."
+            echo "================================="
+
+            docker compose up -d backend frontend admin
+
+            echo "================================="
+            echo "Deployment complete!"
+            echo "================================="
+
+            docker ps
+
+          EOF
+
+          # Remove temporary SSH key
+          rm -f ~/.ssh/deploy_key
