@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-
-const API_URL = process.env.BACKEND_URL || "http://localhost:5003/api";
+import { API_URL } from "../config";
 
 const AuthContext = createContext();
 

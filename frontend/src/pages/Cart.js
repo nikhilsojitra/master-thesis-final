@@ -1,11 +1,13 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
-import { Plus, Minus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../contexts/AuthContext";
+import { Plus, Minus, Trash2, ShoppingCart, ArrowRight } from "lucide-react";
+import { API_URL } from "../config";
 
 const Cart = () => {
-  const { cartItems, updateQuantity, removeFromCart, getCartTotal, clearCart } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal, clearCart } =
+    useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -19,9 +21,9 @@ const Cart = () => {
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
-      navigate('/login', { state: { from: { pathname: '/checkout' } } });
+      navigate("/login", { state: { from: { pathname: "/checkout" } } });
     } else {
-      navigate('/checkout');
+      navigate("/checkout");
     }
   };
 
@@ -30,8 +32,12 @@ const Cart = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
           <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-          <p className="text-gray-600 mb-6">Start shopping to add items to your cart</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Your cart is empty
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Start shopping to add items to your cart
+          </p>
           <Link to="/products" className="btn-primary">
             Browse Products
             <ArrowRight className="ml-2 h-5 w-5" />
@@ -62,11 +68,11 @@ const Cart = () => {
             <div key={item.id} className="card p-4">
               <div className="flex items-center space-x-4">
                 <img
-                  src={item.imageUrl || 'http://localhost:5003/api/placeholder/100/100'}
+                  src={item.imageUrl || `${API_URL}/placeholder/100/100`}
                   alt={item.name}
                   className="w-20 h-20 object-cover rounded-lg"
                 />
-                
+
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-semibold text-gray-900 truncate">
                     {item.name}
@@ -81,7 +87,9 @@ const Cart = () => {
 
                 <div className="flex items-center space-x-3">
                   <button
-                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                    onClick={() =>
+                      handleQuantityChange(item.id, item.quantity - 1)
+                    }
                     className="p-1 border border-gray-300 rounded hover:bg-gray-50"
                   >
                     <Minus className="h-4 w-4" />
@@ -90,7 +98,9 @@ const Cart = () => {
                     {item.quantity}
                   </span>
                   <button
-                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                    onClick={() =>
+                      handleQuantityChange(item.id, item.quantity + 1)
+                    }
                     disabled={item.quantity >= item.stock}
                     className="p-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -133,7 +143,9 @@ const Cart = () => {
                     <span className="truncate mr-2">
                       {item.name} × {item.quantity}
                     </span>
-                    <span>${(parseFloat(item.price) * item.quantity).toFixed(2)}</span>
+                    <span>
+                      ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -166,7 +178,7 @@ const Cart = () => {
                 onClick={handleCheckout}
                 className="w-full btn-primary text-lg py-3"
               >
-                {isAuthenticated ? 'Proceed to Checkout' : 'Login to Checkout'}
+                {isAuthenticated ? "Proceed to Checkout" : "Login to Checkout"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </button>
 

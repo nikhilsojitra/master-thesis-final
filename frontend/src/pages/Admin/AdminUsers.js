@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Search, Trash2, Users, Calendar, ShoppingBag } from 'lucide-react';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Search, Trash2, Users, Calendar, ShoppingBag } from "lucide-react";
+import toast from "react-hot-toast";
+import { API_URL } from "../../config";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    totalUsers: 0
+    totalUsers: 0,
   });
 
   useEffect(() => {
@@ -22,17 +23,17 @@ const AdminUsers = () => {
     try {
       const params = new URLSearchParams({
         page: pagination.currentPage.toString(),
-        limit: '10'
+        limit: "10",
       });
 
-      if (searchTerm) params.append('search', searchTerm);
+      if (searchTerm) params.append("search", searchTerm);
 
-      const response = await axios.get(`http://localhost:5003/api/admin/users?${params}`);
+      const response = await axios.get(`${API_URL}/admin/users?${params}`);
       setUsers(response.data.users);
       setPagination(response.data.pagination);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
-      toast.error('Failed to fetch users');
+      console.error("Failed to fetch users:", error);
+      toast.error("Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -40,27 +41,29 @@ const AdminUsers = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
     fetchUsers();
   };
 
   const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to delete user "${userName}"?`)) {
+    if (
+      !window.confirm(`Are you sure you want to delete user "${userName}"?`)
+    ) {
       return;
     }
 
     try {
-      await axios.delete(`http://localhost:5003/api/admin/users/${userId}`);
-      toast.success('User deleted successfully');
+      await axios.delete(`${API_URL}/admin/users/${userId}`);
+      toast.success("User deleted successfully");
       fetchUsers();
     } catch (error) {
-      console.error('Failed to delete user:', error);
-      toast.error(error.response?.data?.message || 'Failed to delete user');
+      console.error("Failed to delete user:", error);
+      toast.error(error.response?.data?.message || "Failed to delete user");
     }
   };
 
   const handlePageChange = (page) => {
-    setPagination(prev => ({ ...prev, currentPage: page }));
+    setPagination((prev) => ({ ...prev, currentPage: page }));
   };
 
   return (
@@ -140,11 +143,13 @@ const AdminUsers = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          user.role === 'ADMIN' 
-                            ? 'bg-purple-100 text-purple-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.role === "ADMIN"
+                              ? "bg-purple-100 text-purple-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
                           {user.role}
                         </span>
                       </td>
@@ -165,14 +170,20 @@ const AdminUsers = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {user.role !== 'ADMIN' && (
+                        {user.role !== "ADMIN" && (
                           <button
                             onClick={() => handleDeleteUser(user.id, user.name)}
                             className="text-red-600 hover:text-red-900"
                             disabled={user._count.orders > 0}
-                            title={user._count.orders > 0 ? 'Cannot delete user with orders' : 'Delete user'}
+                            title={
+                              user._count.orders > 0
+                                ? "Cannot delete user with orders"
+                                : "Delete user"
+                            }
                           >
-                            <Trash2 className={`h-4 w-4 ${user._count.orders > 0 ? 'opacity-50' : ''}`} />
+                            <Trash2
+                              className={`h-4 w-4 ${user._count.orders > 0 ? "opacity-50" : ""}`}
+                            />
                           </button>
                         )}
                       </td>
@@ -188,7 +199,9 @@ const AdminUsers = () => {
       {users.length === 0 && !loading && (
         <div className="text-center py-12">
           <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No users found
+          </h3>
           <p className="text-gray-600">Try adjusting your search criteria</p>
         </div>
       )}
@@ -204,22 +217,22 @@ const AdminUsers = () => {
             >
               Previous
             </button>
-            
+
             {[...Array(pagination.totalPages)].map((_, index) => {
               const page = index + 1;
               const isCurrentPage = page === pagination.currentPage;
-              
+
               return (
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 rounded ${isCurrentPage ? 'bg-primary-600 text-white' : 'btn-outline'}`}
+                  className={`px-3 py-2 rounded ${isCurrentPage ? "bg-primary-600 text-white" : "btn-outline"}`}
                 >
                   {page}
                 </button>
               );
             })}
-            
+
             <button
               onClick={() => handlePageChange(pagination.currentPage + 1)}
               disabled={!pagination.hasNext}

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { API_URL } from "../config";
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -7,15 +8,13 @@ const ProductManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    stock: '',
-    category: '',
-    imageUrl: ''
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    category: "",
+    imageUrl: "",
   });
-
-  const API_URL = 'http://localhost:5003/api';
 
   useEffect(() => {
     fetchProducts();
@@ -26,7 +25,7 @@ const ProductManagement = () => {
       const response = await axios.get(`${API_URL}/products`);
       setProducts(response.data.products);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
     } finally {
       setLoading(false);
     }
@@ -38,11 +37,14 @@ const ProductManagement = () => {
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock)
+        stock: parseInt(formData.stock),
       };
 
       if (editingProduct) {
-        await axios.put(`${API_URL}/products/${editingProduct.id}`, productData);
+        await axios.put(
+          `${API_URL}/products/${editingProduct.id}`,
+          productData,
+        );
       } else {
         await axios.post(`${API_URL}/products`, productData);
       }
@@ -51,7 +53,7 @@ const ProductManagement = () => {
       setShowModal(false);
       resetForm();
     } catch (error) {
-      console.error('Error saving product:', error);
+      console.error("Error saving product:", error);
     }
   };
 
@@ -63,36 +65,38 @@ const ProductManagement = () => {
       price: product.price.toString(),
       stock: product.stock.toString(),
       category: product.category,
-      imageUrl: product.imageUrl || ''
+      imageUrl: product.imageUrl || "",
     });
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         await axios.delete(`${API_URL}/products/${id}`);
         fetchProducts();
       } catch (error) {
-        console.error('Error deleting product:', error);
+        console.error("Error deleting product:", error);
       }
     }
   };
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      description: '',
-      price: '',
-      stock: '',
-      category: '',
-      imageUrl: ''
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      category: "",
+      imageUrl: "",
     });
     setEditingProduct(null);
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">Loading...</div>
+    );
   }
 
   return (
@@ -137,13 +141,19 @@ const ProductManagement = () => {
                     <div className="flex-shrink-0 h-10 w-10">
                       <img
                         className="h-10 w-10 rounded-full object-cover"
-                        src={product.imageUrl || 'https://via.placeholder.com/40'}
+                        src={
+                          product.imageUrl || "https://via.placeholder.com/40"
+                        }
                         alt=""
                       />
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                      <div className="text-sm text-gray-500">{product.description.substring(0, 50)}...</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {product.description.substring(0, 50)}...
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -182,7 +192,7 @@ const ProductManagement = () => {
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingProduct ? 'Edit Product' : 'Add Product'}
+                {editingProduct ? "Edit Product" : "Add Product"}
               </h3>
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
@@ -194,7 +204,9 @@ const ProductManagement = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                   />
                 </div>
                 <div className="mb-4">
@@ -206,7 +218,9 @@ const ProductManagement = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows="3"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                   />
                 </div>
                 <div className="mb-4">
@@ -219,7 +233,9 @@ const ProductManagement = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
                   />
                 </div>
                 <div className="mb-4">
@@ -231,7 +247,9 @@ const ProductManagement = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, stock: e.target.value })
+                    }
                   />
                 </div>
                 <div className="mb-4">
@@ -243,7 +261,9 @@ const ProductManagement = () => {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
                   />
                 </div>
                 <div className="mb-4">
@@ -254,7 +274,9 @@ const ProductManagement = () => {
                     type="url"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, imageUrl: e.target.value })
+                    }
                   />
                 </div>
                 <div className="flex justify-end space-x-3">
@@ -272,7 +294,7 @@ const ProductManagement = () => {
                     type="submit"
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                   >
-                    {editingProduct ? 'Update' : 'Create'}
+                    {editingProduct ? "Update" : "Create"}
                   </button>
                 </div>
               </form>

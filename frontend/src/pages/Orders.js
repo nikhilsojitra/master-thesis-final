@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { Package, Eye, Calendar, DollarSign } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { Package, Eye, Calendar, DollarSign } from "lucide-react";
+import { API_URL } from "../config";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -9,7 +10,7 @@ const Orders = () => {
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    totalOrders: 0
+    totalOrders: 0,
   });
 
   useEffect(() => {
@@ -19,11 +20,13 @@ const Orders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:5003/api/orders?page=${pagination.currentPage}&limit=10`);      
+      const response = await axios.get(
+        `${API_URL}/orders?page=${pagination.currentPage}&limit=10`,
+      );
       setOrders(response.data.orders);
       setPagination(response.data.pagination);
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
+      console.error("Failed to fetch orders:", error);
     } finally {
       setLoading(false);
     }
@@ -31,22 +34,22 @@ const Orders = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'DELIVERED':
-        return 'bg-green-100 text-green-800';
-      case 'SHIPPED':
-        return 'bg-blue-100 text-blue-800';
-      case 'PROCESSING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
+      case "DELIVERED":
+        return "bg-green-100 text-green-800";
+      case "SHIPPED":
+        return "bg-blue-100 text-blue-800";
+      case "PROCESSING":
+        return "bg-yellow-100 text-yellow-800";
+      case "CANCELLED":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const handlePageChange = (page) => {
-    setPagination(prev => ({ ...prev, currentPage: page }));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setPagination((prev) => ({ ...prev, currentPage: page }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (loading) {
@@ -72,8 +75,12 @@ const Orders = () => {
       {orders.length === 0 ? (
         <div className="text-center py-12">
           <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-          <p className="text-gray-600 mb-6">Start shopping to see your orders here</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No orders yet
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Start shopping to see your orders here
+          </p>
           <Link to="/products" className="btn-primary">
             Browse Products
           </Link>
@@ -81,7 +88,10 @@ const Orders = () => {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <div key={order.id} className="card hover:shadow-lg transition-shadow">
+            <div
+              key={order.id}
+              className="card hover:shadow-lg transition-shadow"
+            >
               <div className="card-content p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex-1">
@@ -89,7 +99,9 @@ const Orders = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         Order #{order.id}
                       </h3>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}
+                      >
                         {order.status}
                       </span>
                     </div>
@@ -104,23 +116,31 @@ const Orders = () => {
                         {order.orderItems.length} item(s)
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
-                        <DollarSign className="h-4 w-4 mr-2" />
-                        ${parseFloat(order.totalAmount).toFixed(2)}
+                        <DollarSign className="h-4 w-4 mr-2" />$
+                        {parseFloat(order.totalAmount).toFixed(2)}
                       </div>
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-4">
                       {order.orderItems.slice(0, 3).map((item) => (
-                        <div key={item.id} className="flex items-center space-x-2 bg-gray-50 rounded-lg p-2">
+                        <div
+                          key={item.id}
+                          className="flex items-center space-x-2 bg-gray-50 rounded-lg p-2"
+                        >
                           <img
-                            src={item.product.imageUrl || 'http://localhost:5003/api/placeholder/40/40'}
+                            src={
+                              item.product.imageUrl ||
+                              `${API_URL}/placeholder/40/40`
+                            }
                             alt={item.product.name}
                             className="w-8 h-8 object-cover rounded"
                           />
                           <span className="text-sm text-gray-700 truncate max-w-32">
                             {item.product.name}
                           </span>
-                          <span className="text-sm text-gray-500">×{item.quantity}</span>
+                          <span className="text-sm text-gray-500">
+                            ×{item.quantity}
+                          </span>
                         </div>
                       ))}
                       {order.orderItems.length > 3 && (
@@ -139,7 +159,7 @@ const Orders = () => {
                       <Eye className="h-4 w-4 mr-2" />
                       View Details
                     </Link>
-                    {order.status === 'PENDING' && (
+                    {order.status === "PENDING" && (
                       <button className="btn-outline text-red-600 border-red-600 hover:bg-red-50">
                         Cancel Order
                       </button>
@@ -161,31 +181,41 @@ const Orders = () => {
                 >
                   Previous
                 </button>
-                
+
                 {[...Array(pagination.totalPages)].map((_, index) => {
                   const page = index + 1;
                   const isCurrentPage = page === pagination.currentPage;
-                  const showPage = page === 1 || page === pagination.totalPages || 
-                                 (page >= pagination.currentPage - 1 && page <= pagination.currentPage + 1);
-                  
+                  const showPage =
+                    page === 1 ||
+                    page === pagination.totalPages ||
+                    (page >= pagination.currentPage - 1 &&
+                      page <= pagination.currentPage + 1);
+
                   if (!showPage) {
-                    if (page === pagination.currentPage - 2 || page === pagination.currentPage + 2) {
-                      return <span key={page} className="px-2">...</span>;
+                    if (
+                      page === pagination.currentPage - 2 ||
+                      page === pagination.currentPage + 2
+                    ) {
+                      return (
+                        <span key={page} className="px-2">
+                          ...
+                        </span>
+                      );
                     }
                     return null;
                   }
-                  
+
                   return (
                     <button
                       key={page}
                       onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 rounded ${isCurrentPage ? 'bg-primary-600 text-white' : 'btn-outline'}`}
+                      className={`px-3 py-2 rounded ${isCurrentPage ? "bg-primary-600 text-white" : "btn-outline"}`}
                     >
                       {page}
                     </button>
                   );
                 })}
-                
+
                 <button
                   onClick={() => handlePageChange(pagination.currentPage + 1)}
                   disabled={!pagination.hasNext}

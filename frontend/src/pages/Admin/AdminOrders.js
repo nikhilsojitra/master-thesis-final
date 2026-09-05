@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Search, Eye, Package, Calendar, DollarSign } from 'lucide-react';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Search, Eye, Package, Calendar, DollarSign } from "lucide-react";
+import toast from "react-hot-toast";
+import { API_URL } from "../../config";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState("");
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    totalOrders: 0
+    totalOrders: 0,
   });
 
   useEffect(() => {
@@ -22,17 +23,17 @@ const AdminOrders = () => {
     try {
       const params = new URLSearchParams({
         page: pagination.currentPage.toString(),
-        limit: '10'
+        limit: "10",
       });
 
-      if (statusFilter) params.append('status', statusFilter);
+      if (statusFilter) params.append("status", statusFilter);
 
-      const response = await axios.get(`http://localhost:5003/api/admin/orders?${params}`);
+      const response = await axios.get(`${API_URL}/admin/orders?${params}`);
       setOrders(response.data.orders);
       setPagination(response.data.pagination);
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
-      toast.error('Failed to fetch orders');
+      console.error("Failed to fetch orders:", error);
+      toast.error("Failed to fetch orders");
     } finally {
       setLoading(false);
     }
@@ -40,32 +41,36 @@ const AdminOrders = () => {
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
-      await axios.put(`http://localhost:5003/api/admin/orders/${orderId}/status`, { status: newStatus });
-      toast.success('Order status updated successfully');
+      await axios.put(`${API_URL}/admin/orders/${orderId}/status`, {
+        status: newStatus,
+      });
+      toast.success("Order status updated successfully");
       fetchOrders();
     } catch (error) {
-      console.error('Failed to update order status:', error);
-      toast.error(error.response?.data?.message || 'Failed to update order status');
+      console.error("Failed to update order status:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to update order status",
+      );
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'DELIVERED':
-        return 'bg-green-100 text-green-800';
-      case 'SHIPPED':
-        return 'bg-blue-100 text-blue-800';
-      case 'PROCESSING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
+      case "DELIVERED":
+        return "bg-green-100 text-green-800";
+      case "SHIPPED":
+        return "bg-blue-100 text-blue-800";
+      case "PROCESSING":
+        return "bg-yellow-100 text-yellow-800";
+      case "CANCELLED":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const handlePageChange = (page) => {
-    setPagination(prev => ({ ...prev, currentPage: page }));
+    setPagination((prev) => ({ ...prev, currentPage: page }));
   };
 
   return (
@@ -86,7 +91,7 @@ const AdminOrders = () => {
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
-              setPagination(prev => ({ ...prev, currentPage: 1 }));
+              setPagination((prev) => ({ ...prev, currentPage: 1 }));
             }}
           >
             <option value="">All Orders</option>
@@ -175,7 +180,9 @@ const AdminOrders = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <select
                           value={order.status}
-                          onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                          onChange={(e) =>
+                            handleStatusUpdate(order.id, e.target.value)
+                          }
                           className={`text-xs font-semibold rounded-full px-2 py-1 border-0 ${getStatusColor(order.status)}`}
                         >
                           <option value="PENDING">PENDING</option>
@@ -195,7 +202,9 @@ const AdminOrders = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
-                          onClick={() => {/* View order details */}}
+                          onClick={() => {
+                            /* View order details */
+                          }}
                           className="text-primary-600 hover:text-primary-900"
                         >
                           <Eye className="h-4 w-4" />
@@ -221,22 +230,22 @@ const AdminOrders = () => {
             >
               Previous
             </button>
-            
+
             {[...Array(pagination.totalPages)].map((_, index) => {
               const page = index + 1;
               const isCurrentPage = page === pagination.currentPage;
-              
+
               return (
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 rounded ${isCurrentPage ? 'bg-primary-600 text-white' : 'btn-outline'}`}
+                  className={`px-3 py-2 rounded ${isCurrentPage ? "bg-primary-600 text-white" : "btn-outline"}`}
                 >
                   {page}
                 </button>
               );
             })}
-            
+
             <button
               onClick={() => handlePageChange(pagination.currentPage + 1)}
               disabled={!pagination.hasNext}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -10,8 +11,6 @@ const Dashboard = () => {
   });
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const API_URL = process.env.BACKEND_URL;
 
   useEffect(() => {
     fetchDashboardData();
@@ -32,7 +31,7 @@ const Dashboard = () => {
 
       const totalRevenue = orders.reduce(
         (sum, order) => sum + order.totalAmount,
-        0
+        0,
       );
 
       setStats({
@@ -216,10 +215,10 @@ const Dashboard = () => {
                           order.status === "DELIVERED"
                             ? "bg-green-100 text-green-800"
                             : order.status === "SHIPPED"
-                            ? "bg-blue-100 text-blue-800"
-                            : order.status === "PROCESSING"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-gray-100 text-gray-800"
+                              ? "bg-blue-100 text-blue-800"
+                              : order.status === "PROCESSING"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {order.status}

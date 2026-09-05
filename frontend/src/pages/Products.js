@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { Search, Filter, ShoppingCart, Grid, List } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { Search, Filter, ShoppingCart, Grid, List } from "lucide-react";
+import { useCart } from "../contexts/CartContext";
+import { API_URL } from "../config";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    minPrice: '',
-    maxPrice: ''
+    minPrice: "",
+    maxPrice: "",
   });
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    totalProducts: 0
+    totalProducts: 0,
   });
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(false);
 
   const { addToCart } = useCart();
@@ -31,18 +32,18 @@ const Products = () => {
     try {
       const params = new URLSearchParams({
         page: pagination.currentPage.toString(),
-        limit: '12'
+        limit: "12",
       });
 
-      if (searchTerm) params.append('search', searchTerm);
-      if (filters.minPrice) params.append('minPrice', filters.minPrice);
-      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+      if (searchTerm) params.append("search", searchTerm);
+      if (filters.minPrice) params.append("minPrice", filters.minPrice);
+      if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
 
-      const response = await axios.get(`http://localhost:5003/api/products?${params}`);
+      const response = await axios.get(`${API_URL}/products?${params}`);
       setProducts(response.data.products);
       setPagination(response.data.pagination);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      console.error("Failed to fetch products:", error);
     } finally {
       setLoading(false);
     }
@@ -50,21 +51,21 @@ const Products = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
     fetchProducts();
   };
 
   const handleFilterChange = (e) => {
     setFilters({
       ...filters,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const clearFilters = () => {
-    setFilters({ minPrice: '', maxPrice: '' });
-    setSearchTerm('');
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setFilters({ minPrice: "", maxPrice: "" });
+    setSearchTerm("");
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
   };
 
   const handleAddToCart = (product) => {
@@ -72,8 +73,8 @@ const Products = () => {
   };
 
   const handlePageChange = (page) => {
-    setPagination(prev => ({ ...prev, currentPage: page }));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setPagination((prev) => ({ ...prev, currentPage: page }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -81,7 +82,7 @@ const Products = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Products</h1>
-        
+
         {/* Search and Filter Bar */}
         <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
           <form onSubmit={handleSearch} className="flex-1 max-w-md">
@@ -108,14 +109,14 @@ const Products = () => {
 
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary-600 text-white' : 'bg-gray-200'}`}
+                onClick={() => setViewMode("grid")}
+                className={`p-2 rounded ${viewMode === "grid" ? "bg-primary-600 text-white" : "bg-gray-200"}`}
               >
                 <Grid className="h-4 w-4" />
               </button>
               <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary-600 text-white' : 'bg-gray-200'}`}
+                onClick={() => setViewMode("list")}
+                className={`p-2 rounded ${viewMode === "list" ? "bg-primary-600 text-white" : "bg-gray-200"}`}
               >
                 <List className="h-4 w-4" />
               </button>
@@ -154,10 +155,7 @@ const Products = () => {
                 />
               </div>
               <div className="flex items-end space-x-2">
-                <button
-                  onClick={clearFilters}
-                  className="btn-secondary"
-                >
+                <button onClick={clearFilters} className="btn-secondary">
                   Clear Filters
                 </button>
               </div>
@@ -173,10 +171,14 @@ const Products = () => {
 
       {/* Products Grid/List */}
       {loading ? (
-        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+        <div
+          className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}
+        >
           {[...Array(12)].map((_, index) => (
             <div key={index} className="card animate-pulse">
-              <div className={`bg-gray-300 rounded-t-lg ${viewMode === 'grid' ? 'h-48' : 'h-32'}`}></div>
+              <div
+                className={`bg-gray-300 rounded-t-lg ${viewMode === "grid" ? "h-48" : "h-32"}`}
+              ></div>
               <div className="p-4 space-y-3">
                 <div className="h-4 bg-gray-300 rounded w-3/4"></div>
                 <div className="h-4 bg-gray-300 rounded w-1/2"></div>
@@ -190,40 +192,63 @@ const Products = () => {
           <div className="text-gray-400 mb-4">
             <Search className="h-16 w-16 mx-auto" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No products found
+          </h3>
           <p className="text-gray-600">Try adjusting your search or filters</p>
         </div>
       ) : (
-        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+        <div
+          className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}
+        >
           {products.map((product) => (
-            <div key={product.id} className={`card hover:shadow-lg transition-shadow ${viewMode === 'list' ? 'flex' : ''}`}>
-              <div className={`relative ${viewMode === 'list' ? 'w-32 flex-shrink-0' : ''}`}>
+            <div
+              key={product.id}
+              className={`card hover:shadow-lg transition-shadow ${viewMode === "list" ? "flex" : ""}`}
+            >
+              <div
+                className={`relative ${viewMode === "list" ? "w-32 flex-shrink-0" : ""}`}
+              >
                 <img
-                  src={product.imageUrl || 'http://localhost:5003/api/placeholder/300/200'}
+                  src={product.imageUrl || `${API_URL}/placeholder/300/200`}
                   alt={product.name}
-                  className={`object-cover ${viewMode === 'grid' ? 'w-full h-48 rounded-t-lg' : 'w-full h-32 rounded-l-lg'}`}
+                  className={`object-cover ${viewMode === "grid" ? "w-full h-48 rounded-t-lg" : "w-full h-32 rounded-l-lg"}`}
                 />
                 {product.stock === 0 && (
-                  <div className={`absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center ${viewMode === 'grid' ? 'rounded-t-lg' : 'rounded-l-lg'}`}>
-                    <span className="text-white font-semibold text-sm">Out of Stock</span>
+                  <div
+                    className={`absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center ${viewMode === "grid" ? "rounded-t-lg" : "rounded-l-lg"}`}
+                  >
+                    <span className="text-white font-semibold text-sm">
+                      Out of Stock
+                    </span>
                   </div>
                 )}
               </div>
-              <div className={`p-4 ${viewMode === 'list' ? 'flex-1 flex flex-col justify-between' : ''}`}>
+              <div
+                className={`p-4 ${viewMode === "list" ? "flex-1 flex flex-col justify-between" : ""}`}
+              >
                 <div>
-                  <h3 className={`font-semibold text-gray-900 mb-2 ${viewMode === 'grid' ? 'text-lg line-clamp-2' : 'text-base'}`}>
+                  <h3
+                    className={`font-semibold text-gray-900 mb-2 ${viewMode === "grid" ? "text-lg line-clamp-2" : "text-base"}`}
+                  >
                     {product.name}
                   </h3>
-                  <p className={`text-gray-600 mb-3 ${viewMode === 'grid' ? 'text-sm line-clamp-2' : 'text-sm line-clamp-1'}`}>
+                  <p
+                    className={`text-gray-600 mb-3 ${viewMode === "grid" ? "text-sm line-clamp-2" : "text-sm line-clamp-1"}`}
+                  >
                     {product.description}
                   </p>
                 </div>
-                <div className={`${viewMode === 'list' ? 'flex items-center justify-between' : ''}`}>
-                  <div className={`${viewMode === 'list' ? '' : 'flex items-center justify-between mb-2'}`}>
+                <div
+                  className={`${viewMode === "list" ? "flex items-center justify-between" : ""}`}
+                >
+                  <div
+                    className={`${viewMode === "list" ? "" : "flex items-center justify-between mb-2"}`}
+                  >
                     <span className="text-2xl font-bold text-primary-600">
                       ${parseFloat(product.price).toFixed(2)}
                     </span>
-                    {viewMode === 'grid' && (
+                    {viewMode === "grid" && (
                       <div className="flex items-center space-x-2">
                         <Link
                           to={`/products/${product.id}`}
@@ -241,7 +266,7 @@ const Products = () => {
                       </div>
                     )}
                   </div>
-                  {viewMode === 'list' && (
+                  {viewMode === "list" && (
                     <div className="flex items-center space-x-2">
                       <Link
                         to={`/products/${product.id}`}
@@ -258,8 +283,12 @@ const Products = () => {
                       </button>
                     </div>
                   )}
-                  <div className={`text-sm text-gray-500 ${viewMode === 'list' ? 'ml-4' : 'mt-2'}`}>
-                    {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                  <div
+                    className={`text-sm text-gray-500 ${viewMode === "list" ? "ml-4" : "mt-2"}`}
+                  >
+                    {product.stock > 0
+                      ? `${product.stock} in stock`
+                      : "Out of stock"}
                   </div>
                 </div>
               </div>
@@ -279,31 +308,41 @@ const Products = () => {
             >
               Previous
             </button>
-            
+
             {[...Array(pagination.totalPages)].map((_, index) => {
               const page = index + 1;
               const isCurrentPage = page === pagination.currentPage;
-              const showPage = page === 1 || page === pagination.totalPages || 
-                             (page >= pagination.currentPage - 1 && page <= pagination.currentPage + 1);
-              
+              const showPage =
+                page === 1 ||
+                page === pagination.totalPages ||
+                (page >= pagination.currentPage - 1 &&
+                  page <= pagination.currentPage + 1);
+
               if (!showPage) {
-                if (page === pagination.currentPage - 2 || page === pagination.currentPage + 2) {
-                  return <span key={page} className="px-2">...</span>;
+                if (
+                  page === pagination.currentPage - 2 ||
+                  page === pagination.currentPage + 2
+                ) {
+                  return (
+                    <span key={page} className="px-2">
+                      ...
+                    </span>
+                  );
                 }
                 return null;
               }
-              
+
               return (
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 rounded ${isCurrentPage ? 'bg-primary-600 text-white' : 'btn-outline'}`}
+                  className={`px-3 py-2 rounded ${isCurrentPage ? "bg-primary-600 text-white" : "btn-outline"}`}
                 >
                   {page}
                 </button>
               );
             })}
-            
+
             <button
               onClick={() => handlePageChange(pagination.currentPage + 1)}
               disabled={!pagination.hasNext}

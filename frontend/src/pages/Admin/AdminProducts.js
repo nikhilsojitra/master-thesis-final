@@ -1,25 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Plus, Edit, Trash2, Search, Package, AlertTriangle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
+  Package,
+  AlertTriangle,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import { API_URL } from "../../config";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    totalProducts: 0
+    totalProducts: 0,
   });
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    stock: '',
-    image: ''
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    image: "",
   });
 
   useEffect(() => {
@@ -31,17 +39,17 @@ const AdminProducts = () => {
     try {
       const params = new URLSearchParams({
         page: pagination.currentPage.toString(),
-        limit: '10'
+        limit: "10",
       });
 
-      if (searchTerm) params.append('search', searchTerm);
+      if (searchTerm) params.append("search", searchTerm);
 
-      const response = await axios.get(`http://localhost:5003/api/products?${params}`);
+      const response = await axios.get(`${API_URL}/products?${params}`);
       setProducts(response.data.products);
       setPagination(response.data.pagination);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
-      toast.error('Failed to fetch products');
+      console.error("Failed to fetch products:", error);
+      toast.error("Failed to fetch products");
     } finally {
       setLoading(false);
     }
@@ -49,29 +57,35 @@ const AdminProducts = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
     fetchProducts();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       if (editingProduct) {
-        await axios.put(`http://localhost:5003/api/products/${editingProduct.id}`, formData);
-        toast.success('Product updated successfully');
+        await axios.put(`${API_URL}/products/${editingProduct.id}`, formData);
+        toast.success("Product updated successfully");
       } else {
-        await axios.post('http://localhost:5003/api/products', formData);
-        toast.success('Product created successfully');
+        await axios.post(`${API_URL}/products`, formData);
+        toast.success("Product created successfully");
       }
-      
+
       setShowModal(false);
       setEditingProduct(null);
-      setFormData({ name: '', description: '', price: '', stock: '', image: '' });
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        image: "",
+      });
       fetchProducts();
     } catch (error) {
-      console.error('Failed to save product:', error);
-      toast.error(error.response?.data?.message || 'Failed to save product');
+      console.error("Failed to save product:", error);
+      toast.error(error.response?.data?.message || "Failed to save product");
     }
   };
 
@@ -82,28 +96,28 @@ const AdminProducts = () => {
       description: product.description,
       price: product.price.toString(),
       stock: product.stock.toString(),
-      image: product.image || ''
+      image: product.image || "",
     });
     setShowModal(true);
   };
 
   const handleDelete = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) {
+    if (!window.confirm("Are you sure you want to delete this product?")) {
       return;
     }
 
     try {
-      await axios.delete(`/api/products/${productId}`);
-      toast.success('Product deleted successfully');
+      await axios.delete(`${API_URL}/products/${productId}`);
+      toast.success("Product deleted successfully");
       fetchProducts();
     } catch (error) {
-      console.error('Failed to delete product:', error);
-      toast.error(error.response?.data?.message || 'Failed to delete product');
+      console.error("Failed to delete product:", error);
+      toast.error(error.response?.data?.message || "Failed to delete product");
     }
   };
 
   const handlePageChange = (page) => {
-    setPagination(prev => ({ ...prev, currentPage: page }));
+    setPagination((prev) => ({ ...prev, currentPage: page }));
   };
 
   return (
@@ -174,7 +188,9 @@ const AdminProducts = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <img
-                            src={product.image || '/api/placeholder/60/60'}
+                            src={
+                              product.image || `${API_URL}/placeholder/60/60`
+                            }
                             alt={product.name}
                             className="w-12 h-12 object-cover rounded-lg mr-4"
                           />
@@ -193,7 +209,9 @@ const AdminProducts = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <span className={`text-sm ${product.stock <= 10 ? 'text-red-600' : 'text-gray-900'}`}>
+                          <span
+                            className={`text-sm ${product.stock <= 10 ? "text-red-600" : "text-gray-900"}`}
+                          >
                             {product.stock}
                           </span>
                           {product.stock <= 10 && (
@@ -240,22 +258,22 @@ const AdminProducts = () => {
             >
               Previous
             </button>
-            
+
             {[...Array(pagination.totalPages)].map((_, index) => {
               const page = index + 1;
               const isCurrentPage = page === pagination.currentPage;
-              
+
               return (
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 rounded ${isCurrentPage ? 'bg-primary-600 text-white' : 'btn-outline'}`}
+                  className={`px-3 py-2 rounded ${isCurrentPage ? "bg-primary-600 text-white" : "btn-outline"}`}
                 >
                   {page}
                 </button>
               );
             })}
-            
+
             <button
               onClick={() => handlePageChange(pagination.currentPage + 1)}
               disabled={!pagination.hasNext}
@@ -273,7 +291,7 @@ const AdminProducts = () => {
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
+                {editingProduct ? "Edit Product" : "Add New Product"}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -284,7 +302,9 @@ const AdminProducts = () => {
                     type="text"
                     className="input"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -296,7 +316,9 @@ const AdminProducts = () => {
                     className="input"
                     rows="3"
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -310,7 +332,9 @@ const AdminProducts = () => {
                     min="0"
                     className="input"
                     value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -323,7 +347,9 @@ const AdminProducts = () => {
                     min="0"
                     className="input"
                     value={formData.stock}
-                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, stock: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -335,7 +361,9 @@ const AdminProducts = () => {
                     type="url"
                     className="input"
                     value={formData.image}
-                    onChange={(e) => setFormData({...formData, image: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, image: e.target.value })
+                    }
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
@@ -345,14 +373,20 @@ const AdminProducts = () => {
                     onClick={() => {
                       setShowModal(false);
                       setEditingProduct(null);
-                      setFormData({ name: '', description: '', price: '', stock: '', image: '' });
+                      setFormData({
+                        name: "",
+                        description: "",
+                        price: "",
+                        stock: "",
+                        image: "",
+                      });
                     }}
                     className="btn-secondary"
                   >
                     Cancel
                   </button>
                   <button type="submit" className="btn-primary">
-                    {editingProduct ? 'Update' : 'Create'}
+                    {editingProduct ? "Update" : "Create"}
                   </button>
                 </div>
               </form>
