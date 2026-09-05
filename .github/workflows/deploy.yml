@@ -7,51 +7,90 @@ on:
 
 jobs:
   deploy:
-    name: Deploy application
     runs-on: ubuntu-latest
 
-    steps:- name: Deploy to EC2
-  env:
-    SSH_HOST: ${{ secrets.SSH_HOST }}
-    SSH_PORT: ${{ secrets.SSH_PORT }}
-    SSH_USER: ${{ secrets.SSH_USER }}
-    SSH_KEY: ${{ secrets.SSH_KEY }}
-  run: |
-    set -e
+    steps:
+      - name: Deploy to EC2
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
 
-    mkdir -p ~/.ssh
-    echo "$SSH_KEY" > ~/.ssh/deploy_key
-    chmod 600 ~/.ssh/deploy_key
+        run: |
+          set -e
 
-    ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+          echo "Setting up SSH..."
 
-    ssh -i ~/.ssh/deploy_key \
-      -p "$SSH_PORT" \
-      "$SSH_USER@$SSH_HOST" << 'EOF'
+          mkdir -p ~/.ssh
 
-      set -e
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
 
-      cd /var/www/master-thesis-final
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      echo "Pulling latest code..."
-      git pull origin main
+          echo "Connecting to EC2..."
 
-      echo "Building backend..."
-      docker compose build backend
+          ssh -i ~/.ssh/deploy_key \
+            -p "$SSH_PORT" \
+            "$SSH_USER@$SSH_HOST" << 'EOF'
 
-      echo "Building frontend..."
-      docker compose build frontend
+            set -e
 
-      echo "Building admin..."
-      docker compose build admin
+            echo "======================================"
+            echo "Starting deployment"
+            echo "======================================"
 
-      echo "Starting containers..."
-      docker compose up -d backend frontend admin
+            cd /var/www/master-thesis-final
 
-      echo "Deployment complete!"
+            echo "Pulling latest code..."
 
-      docker ps
+            git pull origin main
 
-    EOF
+            echo "======================================"
+            echo "Building backend..."
+            echo "======================================"
 
-    rm -f ~/.ssh/deploy_key
+            docker compose build backend
+
+            echo "Backend build completed."
+
+            echo "======================================"
+            echo "Building frontend..."
+            echo "======================================"
+
+            docker compose build frontend
+
+            echo "Frontend build completed."
+
+            echo "======================================"
+            echo "Building admin..."
+            echo "======================================"
+
+            docker compose build admin
+
+            echo "Admin build completed."
+
+            echo "======================================"
+            echo "Starting containers..."
+            echo "======================================"
+
+            docker compose up -d backend frontend admin
+
+            echo "======================================"
+            echo "Deployment completed!"
+            echo "======================================"
+
+            echo "Running containers:"
+
+            docker compose ps
+
+            echo "======================================"
+            echo "Docker status"
+            echo "======================================"
+
+            docker ps
+
+          EOF
+
+          rm -f ~/.ssh/deploy_key
