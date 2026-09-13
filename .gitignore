@@ -2,7 +2,9 @@
 node_modules/
 
 # Environment variables
-.env
+backend/.env
+admin-panel/.env
+frontend/.env
 
 # Build output
 dist/
