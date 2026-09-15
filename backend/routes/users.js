@@ -1,5 +1,4 @@
 const express = require('express');
-const { query, validationResult } = require('express-validator');
 const { PrismaClient } = require('@prisma/client');
 const { auth } = require('../middleware/auth');
 

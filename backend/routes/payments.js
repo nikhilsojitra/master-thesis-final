@@ -149,15 +149,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
   // Handle the event
   switch (event.type) {
-    case 'payment_intent.succeeded':
+     case 'payment_intent.succeeded': {
       const paymentIntent = event.data.object;
       const orderId = parseInt(paymentIntent.metadata.orderId);
-      
+
       if (orderId) {
         try {
           await prisma.order.update({
             where: { id: orderId },
-            data: { 
+            data: {
               status: 'PROCESSING',
               stripeSessionId: paymentIntent.id
             }
@@ -168,11 +168,13 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         }
       }
       break;
+    }
 
-    case 'payment_intent.payment_failed':
+    case 'payment_intent.payment_failed': {
       const failedPayment = event.data.object;
       console.log('Payment failed:', failedPayment.id);
       break;
+    }
 
     default:
       console.log(`Unhandled event type ${event.type}`);
