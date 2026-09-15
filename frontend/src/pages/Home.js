@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import {
   ShoppingCart,
-  Star,
   ArrowRight,
   Package,
   Shield,

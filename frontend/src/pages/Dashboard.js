@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Package, ShoppingBag, Edit, Eye, EyeOff } from 'lucide-react';
+import { User, Package, ShoppingBag, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {

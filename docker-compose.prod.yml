@@ -6,8 +6,15 @@ services:
     env_file:
       - ./backend/.env
     ports:
-      - "5003:5003"
+      - "127.0.0.1:5003:5003"
 
+  # Port 80 on this host belongs to the host-level nginx reverse proxy
+  # (installed directly on Ubuntu, not in Docker -- see
+  # reference_ec2_nginx_proxy_architecture), which forwards
+  # / -> 127.0.0.1:3001, /api/ -> 127.0.0.1:5003, /admin/ -> 127.0.0.1:3002.
+  # None of these containers may bind 0.0.0.0 or host port 80: that would
+  # either conflict with the host nginx (frontend fails to start) or expose
+  # the containers directly to the internet, bypassing it.
   frontend:
     image: ${DOCKERHUB_USERNAME}/shophub-frontend:${IMAGE_TAG:-latest}
     container_name: shophub-frontend
@@ -15,7 +22,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "80:80"
+      - "127.0.0.1:3001:80"
 
   admin:
     image: ${DOCKERHUB_USERNAME}/shophub-admin:${IMAGE_TAG:-latest}
@@ -24,4 +31,4 @@ services:
     depends_on:
       - backend
     ports:
-      - "3002:80"
+      - "127.0.0.1:3002:80"

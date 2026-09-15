@@ -9,7 +9,6 @@ import {
   Truck,
   CheckCircle,
   XCircle,
-  CloudCog,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { API_URL } from "../config";
