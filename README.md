@@ -200,6 +200,34 @@ For testing purposes, you can create these demo accounts:
 - Password: 123456
 - Role: USER
 
+## ✅ Automated Testing
+
+The project follows a four-tier testing pyramid (static analysis → unit → integration → E2E), matching the CI/CD pipeline design in the thesis (Chapter 3, §3.7.3):
+
+| Tier | Tooling | Location | Runs on |
+|---|---|---|---|
+| Static analysis | ESLint | `backend/` | every push/PR |
+| Unit tests | Jest (backend), Jest + React Testing Library (frontend) | `backend/tests/unit`, `frontend/src/**/*.test.js` | every push/PR |
+| Integration tests | Jest + Supertest, against a real MySQL instance | `backend/tests/integration` | every push/PR |
+| Feature/E2E tests | Playwright, against the full running stack | `e2e/` | **main branch only** (slower, so excluded from every PR commit) |
+
+```bash
+# Backend — lint, unit, integration
+cd backend
+npm run lint
+npm run test:unit
+npm run test:integration   # requires DATABASE_URL to point at a reachable MySQL instance
+
+# Frontend — unit/component tests
+cd frontend
+npm test -- --watchAll=false
+
+# End-to-end (from the repo root; spins up the backend + frontend itself)
+npm run test:e2e
+```
+
+The `.github/workflows/ci-cd.yml` pipeline runs all of the above (E2E gated to `main`), then a Trivy + `npm audit` security gate, before building/pushing Docker images and deploying to EC2 with a post-deploy smoke test and automatic rollback.
+
 ## 🧪 Testing Payments
 
 Use Stripe's test card numbers:

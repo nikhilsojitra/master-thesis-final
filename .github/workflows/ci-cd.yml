@@ -1,0 +1,366 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Stage 1: build/test — static analysis, unit, integration, and (main-branch only) E2E tests
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: shophub_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/shophub_test
+      JWT_SECRET: ci-test-secret
+      JWT_EXPIRES_IN: 1h
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Lint backend (static analysis)
+        working-directory: backend
+        run: npm run lint
+
+      - name: Push Prisma schema to test database
+        working-directory: backend
+        run: npm run db:push
+
+      - name: Backend unit tests
+        working-directory: backend
+        run: npm run test:unit
+
+      - name: Backend integration tests
+        working-directory: backend
+        run: npm run test:integration
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend unit tests (Jest + React Testing Library)
+        working-directory: frontend
+        run: npm test -- --watchAll=false
+        env:
+          CI: true
+
+      - name: Frontend production build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Install admin-panel dependencies
+        working-directory: admin-panel
+        run: npm ci
+
+      - name: Admin-panel production build
+        working-directory: admin-panel
+        run: npm run build
+
+      # Feature/E2E tests are expensive (full stack + browser), so they only
+      # run on pushes to main, not on every pull request commit.
+      - name: Install root dependencies (Playwright)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npm ci
+
+      - name: Install Playwright browsers
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests (Playwright, main branch only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+  # Stage 2: security gate — dependency audit + container image scanning
+  security-scan:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: npm audit (backend, fails on high/critical)
+        working-directory: backend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: npm audit (frontend, report only)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=critical || true
+
+      - name: npm audit (admin-panel, report only)
+        working-directory: admin-panel
+        run: npm audit --omit=dev --audit-level=critical || true
+
+      - name: Build backend image for scanning
+        run: docker build -t shophub-backend:scan ./backend
+
+      - name: Build frontend image for scanning
+        run: docker build -t shophub-frontend:scan ./frontend
+
+      - name: Build admin-panel image for scanning
+        run: docker build -t shophub-admin:scan ./admin-panel
+
+      - name: Trivy scan — backend image
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: shophub-backend:scan
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+
+      - name: Trivy scan — frontend image
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: shophub-frontend:scan
+          severity: CRITICAL,HIGH
+          exit-code: '0'
+          ignore-unfixed: true
+
+      - name: Trivy scan — admin-panel image
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: shophub-admin:scan
+          severity: CRITICAL,HIGH
+          exit-code: '0'
+          ignore-unfixed: true
+
+  # Stage 3: build/push — tag and push versioned images to Docker Hub
+  package-and-push:
+    needs: security-scan
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: tag
+        run: echo "image_tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/shophub-backend:${{ steps.tag.outputs.image_tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/shophub-backend:latest
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/shophub-frontend:${{ steps.tag.outputs.image_tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/shophub-frontend:latest
+
+      - name: Build and push admin-panel
+        uses: docker/build-push-action@v6
+        with:
+          context: ./admin-panel
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/shophub-admin:${{ steps.tag.outputs.image_tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/shophub-admin:latest
+
+      # Static build artefacts also get archived to S3 (per Ch3 §3.8 —
+      # separate from the Docker images, which are what actually get deployed).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build frontend static bundle
+        working-directory: frontend
+        run: npm ci && npm run build
+
+      - name: Build admin-panel static bundle
+        working-directory: admin-panel
+        run: npm ci && npm run build
+
+      - name: Archive static bundles
+        run: |
+          tar -czf frontend-build.tar.gz -C frontend/build .
+          tar -czf admin-build.tar.gz -C admin-panel/build .
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload build artefacts to S3
+        env:
+          IMAGE_TAG: ${{ steps.tag.outputs.image_tag }}
+        run: |
+          aws s3 cp frontend-build.tar.gz "s3://${{ secrets.S3_ARTIFACTS_BUCKET }}/builds/frontend/${IMAGE_TAG}.tar.gz"
+          aws s3 cp admin-build.tar.gz "s3://${{ secrets.S3_ARTIFACTS_BUCKET }}/builds/admin/${IMAGE_TAG}.tar.gz"
+
+  # Stage 4: deploy — SSH to EC2 and switch to the newly pushed image tag
+  deploy:
+    needs: package-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy new image tag to EC2
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          IMAGE_TAG: ${{ needs.package-and-push.outputs.image_tag }}
+        run: |
+          set -e
+
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "DOCKERHUB_USERNAME='$DOCKERHUB_USERNAME' IMAGE_TAG='$IMAGE_TAG'" bash -s << 'EOF'
+            set -e
+            cd /var/www/master-thesis-final
+
+            echo "Recording currently-running image tag for possible rollback..."
+            PREVIOUS_TAG=$(cat .last-good-tag 2>/dev/null || echo "latest")
+            echo "$PREVIOUS_TAG" > .last-rollback-tag
+
+            git pull origin main
+
+            export DOCKERHUB_USERNAME
+            export IMAGE_TAG
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+          EOF
+
+          rm -f ~/.ssh/deploy_key
+
+  # Stage 5: smoke test — confirm the newly deployed backend is actually
+  # healthy, and if so, record its tag as the rollback target for next time.
+  smoke-test:
+    needs: [package-and-push, deploy]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Curl the deployed health endpoint
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          set -e
+          for i in $(seq 1 10); do
+            if curl -fsS "http://${SSH_HOST}:5003/api/health"; then
+              echo "Smoke test passed."
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 5s..."
+            sleep 5
+          done
+          echo "Smoke test failed after 10 attempts."
+          exit 1
+
+      - name: Record this deploy's tag as the new rollback target
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          IMAGE_TAG: ${{ needs.package-and-push.outputs.image_tag }}
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "cd /var/www/master-thesis-final && echo '$IMAGE_TAG' > .last-good-tag"
+
+          rm -f ~/.ssh/deploy_key
+
+  # Stage 6: auto-rollback — only runs if the smoke test failed
+  rollback:
+    needs: [deploy, smoke-test]
+    if: failure() && needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Roll back to the last known-good image tag
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          set -e
+
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "DOCKERHUB_USERNAME='$DOCKERHUB_USERNAME'" bash -s << 'EOF'
+            set -e
+            cd /var/www/master-thesis-final
+
+            ROLLBACK_TAG=$(cat .last-rollback-tag 2>/dev/null || echo "latest")
+            echo "Rolling back to image tag: $ROLLBACK_TAG"
+
+            export DOCKERHUB_USERNAME
+            export IMAGE_TAG="$ROLLBACK_TAG"
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+          EOF
+
+          rm -f ~/.ssh/deploy_key
