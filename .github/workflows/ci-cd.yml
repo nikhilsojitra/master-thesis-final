@@ -141,7 +141,7 @@ jobs:
         run: docker build -t shophub-admin:scan ./admin-panel
 
       - name: Trivy scan — backend image
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: shophub-backend:scan
           severity: CRITICAL,HIGH
@@ -149,7 +149,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Trivy scan — frontend image
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: shophub-frontend:scan
           severity: CRITICAL,HIGH
@@ -157,7 +157,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Trivy scan — admin-panel image
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: shophub-admin:scan
           severity: CRITICAL,HIGH
