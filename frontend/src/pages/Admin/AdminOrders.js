@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Search, Eye, Package, Calendar, DollarSign } from "lucide-react";
+import { Eye, Package, Calendar, DollarSign } from "lucide-react";
 import toast from "react-hot-toast";
 import { API_URL } from "../../config";
 
@@ -16,6 +16,7 @@ const AdminOrders = () => {
 
   useEffect(() => {
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.currentPage, statusFilter]);
 
   const fetchOrders = async () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Mail, Phone, MapPin } from 'lucide-react';
+import { Package, Mail } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -44,6 +44,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Customer Service</h3>
             <div className="space-y-2">
+              {/* eslint-disable jsx-a11y/anchor-is-valid -- placeholder links, no destination pages built yet */}
               <a href="#" className="block text-gray-400 hover:text-white transition-colors">
                 Contact Us
               </a>
@@ -56,6 +57,7 @@ const Footer = () => {
               <a href="#" className="block text-gray-400 hover:text-white transition-colors">
                 Returns
               </a>
+              {/* eslint-enable jsx-a11y/anchor-is-valid */}
             </div>
           </div>
 
@@ -63,6 +65,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Legal</h3>
             <div className="space-y-2">
+              {/* eslint-disable jsx-a11y/anchor-is-valid -- placeholder links, no destination pages built yet */}
               <a href="#" className="block text-gray-400 hover:text-white transition-colors">
                 Privacy Policy
               </a>
@@ -72,6 +75,7 @@ const Footer = () => {
               <a href="#" className="block text-gray-400 hover:text-white transition-colors">
                 Cookie Policy
               </a>
+              {/* eslint-enable jsx-a11y/anchor-is-valid */}
             </div>
           </div>
         </div>
