@@ -1,0 +1,27 @@
+services:
+  backend:
+    image: ${DOCKERHUB_USERNAME}/shophub-backend:${IMAGE_TAG:-latest}
+    container_name: shophub-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5003:5003"
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/shophub-frontend:${IMAGE_TAG:-latest}
+    container_name: shophub-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+  admin:
+    image: ${DOCKERHUB_USERNAME}/shophub-admin:${IMAGE_TAG:-latest}
+    container_name: shophub-admin
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3002:80"
