@@ -5,7 +5,6 @@ import {
   Edit,
   Trash2,
   Search,
-  Package,
   AlertTriangle,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -32,6 +31,7 @@ const AdminProducts = () => {
 
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.currentPage, searchTerm]);
 
   const fetchProducts = async () => {

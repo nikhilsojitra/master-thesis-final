@@ -199,6 +199,8 @@ jobs:
         with:
           context: ./frontend
           push: true
+          build-args: |
+            REACT_APP_STRIPE_PUBLISHABLE_KEY=${{ secrets.REACT_APP_STRIPE_PUBLISHABLE_KEY }}
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/shophub-frontend:${{ steps.tag.outputs.image_tag }}
             ${{ secrets.DOCKERHUB_USERNAME }}/shophub-frontend:latest
@@ -297,8 +299,12 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           set -e
+          # Port 5003 is bound to 127.0.0.1 only on the EC2 host (see
+          # reference_ec2_nginx_proxy_architecture) -- not publicly reachable
+          # from this runner. Go through the host nginx on :80 instead, which
+          # proxies /api/ straight through to the backend container.
           for i in $(seq 1 10); do
-            if curl -fsS "http://${SSH_HOST}:5003/api/health"; then
+            if curl -fsS "http://${SSH_HOST}/api/health"; then
               echo "Smoke test passed."
               exit 0
             fi
