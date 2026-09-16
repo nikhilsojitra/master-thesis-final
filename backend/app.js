@@ -13,6 +13,13 @@ const paymentRoutes = require("./routes/payments");
 
 const app = express();
 
+// Trust exactly one reverse-proxy hop (the host-level nginx in front of this
+// container in production). Without this, express-rate-limit throws
+// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR on every request, since nginx sets
+// X-Forwarded-For but Express doesn't trust it by default. Safe locally too
+// -- with no proxy in front, there's no X-Forwarded-For header to trust.
+app.set("trust proxy", 1);
+
 // Security middleware
 app.use(helmet());
 
@@ -20,7 +27,6 @@ app.use(helmet());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  trustProxy: false, // disable trust proxy for development
 });
 app.use(limiter);
 
