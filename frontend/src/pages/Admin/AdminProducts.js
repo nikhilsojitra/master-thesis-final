@@ -26,7 +26,7 @@ const AdminProducts = () => {
     description: "",
     price: "",
     stock: "",
-    image: "",
+    imageUrl: "",
   });
 
   useEffect(() => {
@@ -80,7 +80,7 @@ const AdminProducts = () => {
         description: "",
         price: "",
         stock: "",
-        image: "",
+        imageUrl: "",
       });
       fetchProducts();
     } catch (error) {
@@ -96,7 +96,7 @@ const AdminProducts = () => {
       description: product.description,
       price: product.price.toString(),
       stock: product.stock.toString(),
-      image: product.image || "",
+      imageUrl: product.imageUrl || "",
     });
     setShowModal(true);
   };
@@ -189,7 +189,7 @@ const AdminProducts = () => {
                         <div className="flex items-center">
                           <img
                             src={
-                              product.image || `${API_URL}/placeholder/60/60`
+                              product.imageUrl || "https://placehold.co/60x60"
                             }
                             alt={product.name}
                             className="w-12 h-12 object-cover rounded-lg mr-4"
@@ -360,9 +360,9 @@ const AdminProducts = () => {
                   <input
                     type="url"
                     className="input"
-                    value={formData.image}
+                    value={formData.imageUrl}
                     onChange={(e) =>
-                      setFormData({ ...formData, image: e.target.value })
+                      setFormData({ ...formData, imageUrl: e.target.value })
                     }
                     placeholder="https://example.com/image.jpg"
                   />
@@ -378,7 +378,7 @@ const AdminProducts = () => {
                         description: "",
                         price: "",
                         stock: "",
-                        image: "",
+                        imageUrl: "",
                       });
                     }}
                     className="btn-secondary"

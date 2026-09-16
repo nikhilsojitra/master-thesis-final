@@ -142,7 +142,7 @@ const ProductManagement = () => {
                       <img
                         className="h-10 w-10 rounded-full object-cover"
                         src={
-                          product.imageUrl || "https://via.placeholder.com/40"
+                          product.imageUrl || "https://placehold.co/40x40"
                         }
                         alt=""
                       />

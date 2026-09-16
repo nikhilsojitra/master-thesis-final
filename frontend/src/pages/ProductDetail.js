@@ -105,7 +105,7 @@ const ProductDetail = () => {
         {/* Product Image */}
         <div className="relative">
           <img
-            src={product.image || `${API_URL}/placeholder/600/400`}
+            src={product.imageUrl || "https://placehold.co/600x400"}
             alt={product.name}
             className="w-full h-96 object-cover rounded-lg shadow-lg"
           />

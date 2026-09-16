@@ -117,7 +117,7 @@ const CheckoutForm = () => {
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center space-x-3">
                     <img
-                      src={item.imageUrl || '/api/placeholder/60/60'}
+                      src={item.imageUrl || 'https://placehold.co/60x60'}
                       alt={item.name}
                       className="w-12 h-12 object-cover rounded"
                     />

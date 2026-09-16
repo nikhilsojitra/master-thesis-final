@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 import { Plus, Minus, Trash2, ShoppingCart, ArrowRight } from "lucide-react";
-import { API_URL } from "../config";
 
 const Cart = () => {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal, clearCart } =
@@ -68,7 +67,7 @@ const Cart = () => {
             <div key={item.id} className="card p-4">
               <div className="flex items-center space-x-4">
                 <img
-                  src={item.imageUrl || `${API_URL}/placeholder/100/100`}
+                  src={item.imageUrl || "https://placehold.co/100x100"}
                   alt={item.name}
                   className="w-20 h-20 object-cover rounded-lg"
                 />
