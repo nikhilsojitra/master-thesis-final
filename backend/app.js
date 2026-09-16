@@ -23,10 +23,15 @@ app.set("trust proxy", 1);
 // Security middleware
 app.use(helmet());
 
-// Rate limiting
+// Rate limiting. A general limit covers every route (basic abuse/DoS
+// mitigation); a separate, much tighter limit is applied specifically to
+// login/register in routes/auth.js, where rate limiting actually matters
+// for security (brute-force protection). 100 req/15min applied globally
+// was too tight for normal interactive browsing -- a single product page
+// view can easily fire several API calls, so real usage exhausted it fast.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 300, // limit each IP to 300 requests per windowMs
 });
 app.use(limiter);
 
