@@ -124,7 +124,7 @@ const Login = () => {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Demo accounts: admin@demo.com / user@demo.com (password: demo123)
+              Demo admin account: admin@example.com (password: password) &mdash; or register your own account above
             </p>
           </div>
         </form>

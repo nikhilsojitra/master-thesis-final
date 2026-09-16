@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const { PrismaClient } = require('@prisma/client');
 const { auth } = require('../middleware/auth');
@@ -8,8 +9,18 @@ const { auth } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// Tighter limit than the app-wide default, specifically for register/login
+// -- this is where rate limiting actually matters for brute-force
+// protection, so it stays strict even though the general app-wide limit
+// (app.js) was relaxed for normal browsing.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { message: 'Too many login/register attempts, please try again later.' },
+});
+
 // Register
-router.post('/register', [
+router.post('/register', authLimiter, [
   body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
   body('email').isEmail().withMessage('Please provide a valid email'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
@@ -69,7 +80,7 @@ router.post('/register', [
 });
 
 // Login
-router.post('/login', [
+router.post('/login', authLimiter, [
   body('email').isEmail().withMessage('Please provide a valid email'),
   body('password').exists().withMessage('Password is required')
 ], async (req, res) => {
