@@ -211,7 +211,7 @@ const Products = () => {
                 className={`relative ${viewMode === "list" ? "w-32 flex-shrink-0" : ""}`}
               >
                 <img
-                  src={product.imageUrl || `${API_URL}/placeholder/300/200`}
+                  src={product.imageUrl || "https://placehold.co/300x200"}
                   alt={product.name}
                   className={`object-cover ${viewMode === "grid" ? "w-full h-48 rounded-t-lg" : "w-full h-32 rounded-l-lg"}`}
                 />

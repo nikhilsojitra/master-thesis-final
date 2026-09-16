@@ -131,7 +131,7 @@ const Orders = () => {
                           <img
                             src={
                               item.product.imageUrl ||
-                              `${API_URL}/placeholder/40/40`
+                              "https://placehold.co/40x40"
                             }
                             alt={item.product.name}
                             className="w-8 h-8 object-cover rounded"

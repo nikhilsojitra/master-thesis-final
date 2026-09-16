@@ -152,7 +152,7 @@ const Home = () => {
                 >
                   <div className="relative">
                     <img
-                      src={product.imageUrl || "/api/placeholder/300/200"}
+                      src={product.imageUrl || "https://placehold.co/300x200"}
                       alt={product.name}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
