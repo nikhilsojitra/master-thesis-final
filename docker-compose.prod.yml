@@ -5,6 +5,14 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
+    # host.docker.internal resolves automatically on Docker Desktop (Mac/
+    # Windows), but NOT on native Linux Docker Engine (this EC2 host) unless
+    # explicitly added. DATABASE_URL in backend/.env points at
+    # host.docker.internal because the database is MySQL running directly
+    # on this EC2 host (systemd service), not RDS -- see results.md's
+    # 2026-09-16 entry for the RDS-vs-local-MySQL discussion.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:5003:5003"
 
