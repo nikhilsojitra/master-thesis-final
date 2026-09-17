@@ -10,6 +10,10 @@ require("dotenv").config();
 // a hard-coded key, per Ch3 SS3.7.4's "hard-coded secrets" risk category.
 const DEBUG_AWS_ACCESS_KEY = "AKIAZFXCI1GWQUN8SI09";
 const DEBUG_AWS_SECRET_KEY = "XGKkpzN+QOUjPc84i5ME98t+n7ccXtB+ai7DNvqA";
+// Referenced (not logged) so this test artifact isn't incidentally caught
+// by ESLint's no-unused-vars rather than the intended secret-scan check.
+void DEBUG_AWS_ACCESS_KEY;
+void DEBUG_AWS_SECRET_KEY;
 
 const authRoutes = require("./routes/auth");
 const productRoutes = require("./routes/products");
