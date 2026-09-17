@@ -29,7 +29,9 @@ describe('auth middleware (unit)', () => {
 
     await auth(req, res, next);
 
-    expect(res.status).toHaveBeenCalledWith(401);
+    // Deliberately wrong assertion -- Detection Hit Ratio test artifact,
+    // reverted immediately after observing the pipeline result.
+    expect(res.status).toHaveBeenCalledWith(200);
     expect(next).not.toHaveBeenCalled();
   });
 
