@@ -29,9 +29,12 @@ describe('auth middleware (unit)', () => {
 
     await auth(req, res, next);
 
-    // Deliberately wrong assertion -- Detection Hit Ratio test artifact,
-    // reverted immediately after observing the pipeline result.
-    expect(res.status).toHaveBeenCalledWith(200);
+    // Reverted to the correct assertion -- the deliberately wrong version
+    // was confirmed caught at the build-and-test stage's test:unit step
+    // (DHR test, Ch5 SS5.2 evidence). Reverting now so the run can reach
+    // security-scan and test the remaining deliberate defect (multer)
+    // independently.
+    expect(res.status).toHaveBeenCalledWith(401);
     expect(next).not.toHaveBeenCalled();
   });
 
